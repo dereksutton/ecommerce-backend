@@ -24,6 +24,7 @@ Category.init(
     freezeTableName: true,
     underscored: true,
     modelName: 'category',
+    tableName: 'category'
   }
 );
 
