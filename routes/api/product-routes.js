@@ -8,7 +8,10 @@ router.get('/', async (req, res) => {
   // find all products include its associated Category and Tag data
   try {
     const productData = await Product.findAll({
-        include: [{ model: Category }, { model: Tag }],
+        include: [
+          { model: Category },
+          { model: Tag, as: 'tags', through: ProductTag }
+        ],
     });
     res.status(200).json(productData);
   } catch (err) {
@@ -21,7 +24,10 @@ router.get('/:id', async (req, res) => {
   // find a single product by its `id` include its associated Category and Tag data
   try {
     const productData = await Product.findByPk(req.params.id, {
-        include: [{ model: Category }, { model: Tag}],
+        include: [
+          { model: Category },
+          { model: Tag, as: 'tags', through: ProductTag },
+        ],
     });
 
     if (!productData) {
@@ -40,7 +46,7 @@ router.post('/', async (req, res) => {
     try {
       const product = await Product.create(req.body);
   
-      if (req.body.tagIds.length) {
+      if (req.body.tagIds && Array.isArray(req.body.tagIds) && req.body.tagIds.length) {
         const productTagIdArr = req.body.tagIds.map((tag_id) => {
           return {
             product_id: product.id,
@@ -48,9 +54,9 @@ router.post('/', async (req, res) => {
           };
         });
         await ProductTag.bulkCreate(productTagIdArr);
+      } else {
+        res.status(200).json(product);
       }
-  
-      res.status(200).json(product);
     } catch (err) {
       console.log(err);
       res.status(400).json(err);
